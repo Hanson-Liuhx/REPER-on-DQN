@@ -38,10 +38,11 @@ def select_action(state):
         return torch.tensor([[random.randrange(4)]], device=device, dtype=torch.long)
 
     
-def optimize_model():
+def optimize_model(memory):
     if len(memory) < BATCH_SIZE:
         return
     transitions = memory.sample(BATCH_SIZE)
+    state, action, reward, next_state, done, batch_indices, weights = memory.sample(BATCH_SIZE, beta=0.4) 
     """
     zip(*transitions) unzips the transitions into
     Transition(*) creates new named tuple
@@ -75,6 +76,12 @@ def optimize_model():
     
     loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
     
+    
+
+    memory.update_priorities(batch_indices, batch_priorities)
+
+
+
     optimizer.zero_grad()
     loss.backward()
     for param in policy_net.parameters():
@@ -87,7 +94,7 @@ def get_state(obs):
     state = torch.from_numpy(state)
     return state.unsqueeze(0)
 
-def train(env, n_episodes, render=False):
+def train(env, n_episodes, memory, render=False):
     for episode in range(n_episodes):
         obs = env.reset()
         state = get_state(obs)
@@ -109,11 +116,11 @@ def train(env, n_episodes, render=False):
 
             reward = torch.tensor([reward], device=device)
 
-            memory.push(state, action.to('cpu'), next_state, reward.to('cpu'))
+            memory.push(state, action.to('cpu'), next_state, reward.to('cpu'), done)
             state = next_state
 
             if steps_done > INITIAL_MEMORY:
-                optimize_model()
+                optimize_model(memory)
 
                 if steps_done % TARGET_UPDATE == 0:
                     target_net.load_state_dict(policy_net.state_dict())
@@ -190,7 +197,7 @@ if __name__ == '__main__':
     memory = ReplayMemory(MEMORY_SIZE)
     
     # train model
-    train(env, 600)
+    train(env, 600, memory)
     torch.save(policy_net, "dqn_pong_model")
     policy_net = torch.load("dqn_pong_model")
     test(env, 1, policy_net, render=False)

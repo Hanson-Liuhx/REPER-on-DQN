@@ -1,0 +1,37 @@
+Total steps: 846 	 Episode: 0/845 	 Total reward: -21.0
+Total steps: 20380 	 Episode: 20/1062 	 Total reward: -20.0
+Total steps: 38903 	 Episode: 40/1090 	 Total reward: -20.0
+Total steps: 58052 	 Episode: 60/1061 	 Total reward: -21.0
+Total steps: 78497 	 Episode: 80/1149 	 Total reward: -20.0
+Total steps: 98878 	 Episode: 100/1071 	 Total reward: -20.0
+Total steps: 120503 	 Episode: 120/1246 	 Total reward: -19.0
+Total steps: 144214 	 Episode: 140/1277 	 Total reward: -20.0
+Total steps: 165736 	 Episode: 160/1058 	 Total reward: -21.0
+Total steps: 188921 	 Episode: 180/1058 	 Total reward: -20.0
+Total steps: 212761 	 Episode: 200/1375 	 Total reward: -19.0
+Total steps: 236693 	 Episode: 220/1189 	 Total reward: -19.0
+Total steps: 260209 	 Episode: 240/1362 	 Total reward: -20.0
+Total steps: 284632 	 Episode: 260/1208 	 Total reward: -21.0
+Total steps: 308071 	 Episode: 280/1107 	 Total reward: -20.0
+Total steps: 333826 	 Episode: 300/1398 	 Total reward: -19.0
+Total steps: 360055 	 Episode: 320/1364 	 Total reward: -19.0
+Total steps: 387469 	 Episode: 340/1458 	 Total reward: -17.0
+Total steps: 413466 	 Episode: 360/1550 	 Total reward: -17.0
+Total steps: 441918 	 Episode: 380/1419 	 Total reward: -19.0
+Total steps: 472176 	 Episode: 400/1735 	 Total reward: -19.0
+Total steps: 502547 	 Episode: 420/1622 	 Total reward: -18.0
+Total steps: 533962 	 Episode: 440/1817 	 Total reward: -15.0
+Total steps: 566983 	 Episode: 460/1435 	 Total reward: -16.0
+Total steps: 600796 	 Episode: 480/1367 	 Total reward: -19.0
+Total steps: 638546 	 Episode: 500/2567 	 Total reward: -12.0
+Total steps: 673607 	 Episode: 520/1550 	 Total reward: -15.0
+Total steps: 714410 	 Episode: 540/1478 	 Total reward: -18.0
+Total steps: 754394 	 Episode: 560/1878 	 Total reward: -13.0
+Total steps: 791173 	 Episode: 580/2477 	 Total reward: -12.0
+Finished Episode 0 with reward 20.0
+Traceback (most recent call last):
+  File "main.py", line 6, in <module>
+    import numpy as np 
+ModuleNotFoundError: No module named 'numpy'
+Total steps: 1063 	 Episode: 0/1062 	 Total reward: -19.0
+torch.Size([32, 4, 84, 84])

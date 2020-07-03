@@ -1,1 +1,1 @@
-CUDA_VISIBLE_DEVICES=1 python main.py
+CUDA_VISIBLE_DEVICES=2 python main.py --sample_method=PER

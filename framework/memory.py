@@ -18,73 +18,124 @@ class ReplayMemory(object):
         self.position = (self.position + 1) % self.capacity
         
     def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
+        ret = random.sample(self.memory, batch_size)
+        # A list of BATCH_SIZE trasition object, each of them: ('state', 'action', 'next_state', 'reward'))
+        return ret
     
     def __len__(self):
         return len(self.memory)
 
 
-class PrioritizedReplay(object):
-    def __init__(self, capacity):
-        pass
+# class PrioritizedReplay(object):
+#     def __init__(self, capacity):
+#         pass
 
 
 
 # From http://10.15.89.41:30303/notebooks/code_from_jupyter/full-version/RL-Adventure/4.prioritized%20dqn.ipynb
 # Not origin web... fix later
-class NaivePrioritizedBuffer(object):
+class NaivePrioritizedMemory(object):
     def __init__(self, capacity, prob_alpha=0.6):
         self.prob_alpha = prob_alpha
         self.capacity   = capacity
-        self.buffer     = []
-        self.pos        = 0
+        self.memory     = []
+        self.position   = 0
         self.priorities = np.zeros((capacity,), dtype=np.float32)
     
     def push(self, state, action, reward, next_state, done):
-        assert state.ndim == next_state.ndim
-        state      = np.expand_dims(state, 0)
-        next_state = np.expand_dims(next_state, 0)
         
-        max_prio = self.priorities.max() if self.buffer else 1.0
+        max_prio = self.priorities.max() if self.memory else 1.0
+
+        if len(self.memory) < self.capacity:
+            self.memory.append(None)
+        self.memory[self.position] = Transition(state, action, reward, next_state)
         
-        if len(self.buffer) < self.capacity:
-            self.buffer.append((state, action, reward, next_state, done))
-        else:
-            # TODO Maybe replace the one with lowest priority
-            self.buffer[self.pos] = (state, action, reward, next_state, done)
-        
-        self.priorities[self.pos] = max_prio
-        self.pos = (self.pos + 1) % self.capacity
+        self.priorities[self.position] = max_prio
+
+        # TODO Maybe another way
+        self.position = (self.position + 1) % self.capacity
+
     
     def sample(self, batch_size, beta=0.4):
-        if len(self.buffer) == self.capacity:
+        if len(self.memory) == self.capacity:
             prios = self.priorities
         else:
-            prios = self.priorities[:self.pos]
+            prios = self.priorities[:self.position]
         
+        # Stardardized formula
         probs  = prios ** self.prob_alpha
         probs /= probs.sum()
         
-        indices = np.random.choice(len(self.buffer), batch_size, p=probs)
-        samples = [self.buffer[idx] for idx in indices]
+        # print(self.priorities)
+        # exit()
         
-        total    = len(self.buffer)
+        indices = np.random.choice(len(self.memory), batch_size, p=probs)
+        samples = [self.memory[idx] for idx in indices]
+        
+        total    = len(self.memory)
         weights  = (total * probs[indices]) ** (-beta)
-        weights /= weights.max()
-        weights  = np.array(weights, dtype=np.float32)
-        
-        batch       = zip(*samples)
-        states      = np.concatenate(batch[0])
-        actions     = batch[1]
-        rewards     = batch[2]
-        next_states = np.concatenate(batch[3])
-        dones       = batch[4]
-        
-        return states, actions, rewards, next_states, dones, indices, weights
+        weights /= weights.max()        
+
+        return samples, indices, weights
     
     def update_priorities(self, batch_indices, batch_priorities):
         for idx, prio in zip(batch_indices, batch_priorities):
             self.priorities[idx] = prio
 
     def __len__(self):
-        return len(self.buffer)
+        return len(self.memory)
+
+
+
+
+
+class REPERMemory(object):
+    def __init__(self, capacity, prob_alpha=0.6):
+        self.prob_alpha = prob_alpha
+        self.capacity   = capacity
+        self.memory     = []
+        self.position   = 0
+        self.priorities = np.zeros((capacity,), dtype=np.float32)
+    
+    def push(self, state, action, reward, next_state, done):
+        
+        max_prio = self.priorities.max() if self.memory else 1.0
+
+        if len(self.memory) < self.capacity:
+            self.memory.append(None)
+        self.memory[self.position] = Transition(state, action, reward, next_state)
+        
+        self.priorities[self.position] = max_prio
+
+        # TODO Maybe another way
+        self.position = (self.position + 1) % self.capacity
+
+    
+    def sample(self, batch_size, beta=0.4):
+        if len(self.memory) == self.capacity:
+            prios = self.priorities
+        else:
+            prios = self.priorities[:self.position]
+        
+        # Stardardized formula
+        probs  = prios ** self.prob_alpha
+        probs /= probs.sum()
+        
+        # print(self.priorities)
+        # exit()
+        
+        indices = np.random.choice(len(self.memory), batch_size, p=probs)
+        samples = [self.memory[idx] for idx in indices]
+        
+        total    = len(self.memory)
+        weights  = (total * probs[indices]) ** (-beta)
+        weights /= weights.max()        
+
+        return samples, indices, weights
+    
+    def update_priorities(self, batch_indices, batch_priorities):
+        for idx, prio in zip(batch_indices, batch_priorities):
+            self.priorities[idx] = prio
+
+    def __len__(self):
+        return len(self.memory)

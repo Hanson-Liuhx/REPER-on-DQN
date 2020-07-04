@@ -9,7 +9,7 @@ import time
 import gym
 
 from wrappers import *
-from memory import ReplayMemory, NaivePrioritizedMemory
+from memory import ReplayMemory, NaivePrioritizedMemory, REPERMemory
 from models import *
 
 import torch
@@ -28,6 +28,10 @@ Transition = namedtuple('Transion',
                         ('state', 'action', 'next_state', 'reward'))
 
 
+Transition_with_time = namedtuple('Transion', 
+                        ('state', 'action', 'next_state', 'reward', 'time'))
+
+
 def select_action(state):
     global steps_done
     sample = random.random()
@@ -41,7 +45,7 @@ def select_action(state):
         return torch.tensor([[random.randrange(4)]], device=device, dtype=torch.long)
 
     
-def optimize_model(memory):
+def optimize_model_random(memory):
     if len(memory) < BATCH_SIZE:
         return
     transitions = memory.sample(BATCH_SIZE)
@@ -89,13 +93,72 @@ def optimize_model(memory):
 
 
 
-def optimize_model_REPER(memory):
+def optimize_model_PER(memory):
     if len(memory) < BATCH_SIZE:
         return
     transitions, indices, weights = memory.sample(BATCH_SIZE)
     
-    # print(len(transitions))
-    # print(type(transitions[0]))
+    
+    """
+    zip(*transitions) unzips the transitions into
+    Transition(*) creates new named tuple
+    batch.state - tuple of all the states (each state is a tensor)
+    batch.next_state - tuple of all the next states (each state is a tensor)
+    batch.reward - tuple of all the rewards (each reward is a float)
+    batch.action - tuple of all the actions (each action is an int)    
+    """
+    batch = Transition_with_time(*zip(*transitions))
+    
+    actions = tuple((map(lambda a: torch.tensor([[a]], device='cuda'), batch.action))) 
+    rewards = tuple((map(lambda r: torch.tensor([r], device='cuda'), batch.reward))) 
+
+    non_final_mask = torch.tensor(
+        tuple(map(lambda s: s is not None, batch.next_state)),
+        device=device, dtype=torch.uint8)
+    
+    non_final_next_states = torch.cat([s for s in batch.next_state
+                                       if s is not None]).to('cuda')
+    
+
+    state_batch = torch.cat(batch.state).to('cuda')
+    action_batch = torch.cat(actions)
+    reward_batch = torch.cat(rewards)
+
+    # print(state_batch.size())
+    # exit()
+
+    state_action_values = policy_net(state_batch).gather(1, action_batch).squeeze(1)
+    
+    next_state_values = torch.zeros(BATCH_SIZE, device=device)
+    next_state_values[non_final_mask] = target_net(non_final_next_states).max(1)[0].detach()
+    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+    # expected_state_action_values = (1 - done) * (next_state_values * GAMMA) + reward_batch
+    
+    # loss = F.smooth_l1_loss(state_action_values, expected_state_action_values.unsqueeze(1))
+    
+    # Compute los by our own
+    weights = torch.tensor(weights).float().to('cuda')
+
+    loss = (state_action_values - expected_state_action_values)**2 * weights
+
+    prios = loss + 1e-5
+
+
+    loss = loss.mean()
+
+    optimizer.zero_grad()
+    loss.backward()
+
+    memory.update_priorities(indices, prios)
+    optimizer.step()
+
+
+
+
+def optimize_model_REPER(memory):
+    if len(memory) < BATCH_SIZE:
+        return
+    transitions, indices, weights = memory.sample(BATCH_SIZE)
     
     
     """
@@ -138,16 +201,9 @@ def optimize_model_REPER(memory):
     # Compute los by our own
     weights = torch.tensor(weights).float().to('cuda')
 
-    # print(state_action_values.size())
-    # print(expected_state_action_values.size())
-    # print(((state_action_values - expected_state_action_values)**2).size())
-
-
     loss = (state_action_values - expected_state_action_values)**2 * weights
 
     prios = loss + 1e-5
-    # print(loss.size())
-    # print(prios.size())
 
 
     loss = loss.mean()
@@ -155,18 +211,8 @@ def optimize_model_REPER(memory):
     optimizer.zero_grad()
     loss.backward()
 
-    # print(prios)
-    # print(indices)
-    # exit()
-
     memory.update_priorities(indices, prios)
     optimizer.step()
-
-    # optimizer.zero_grad()
-    # loss.backward()
-    # for param in policy_net.parameters():
-    #     param.grad.data.clamp_(-1, 1)
-    # optimizer.step()
 
 
 
@@ -204,8 +250,7 @@ def train(env, n_episodes, memory, render, sample):
             elif sample == 'random':
                 memory.push(state, action.to('cpu'), next_state, reward.to('cpu'))
             elif sample == 'REPER':
-                pass
-
+                memory.push(state, action.to('cpu'), next_state, reward.to('cpu'), done)
 
 
             state = next_state
@@ -215,7 +260,9 @@ def train(env, n_episodes, memory, render, sample):
                 if sample == 'PER':
                     optimize_model_REPER(memory)
                 elif sample == 'random':
-                    optimize_model(memory)
+                    optimize_model_random(memory)
+                elif sample == 'PER':
+                    optimize_model_PER(memory)
 
                 if steps_done % TARGET_UPDATE == 0:
                     target_net.load_state_dict(policy_net.state_dict())
@@ -227,8 +274,11 @@ def train(env, n_episodes, memory, render, sample):
     env.close()
     return
 
-def test(env, n_episodes, policy, render=True):
-    env = gym.wrappers.Monitor(env, './videos/' + 'dqn_pong_video')
+def test(env, n_episodes, policy, render, sample_method):
+    
+    _time = time.strftime("%Y-%m-%d-%H:%M:%S", time.localtime()) 
+
+    env = gym.wrappers.Monitor(env, './videos-{0}-{1}/dqn_pong_video'.format(_time, sample_method))
     for episode in range(n_episodes):
         obs = env.reset()
         state = get_state(obs)
@@ -261,7 +311,7 @@ def test(env, n_episodes, policy, render=True):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--sample_method', type=str, default='PER', help="Prioritized Experience Replay(PER)/REPER/random")
+    parser.add_argument('--sample_method', type=str, default='PER', help="PER/REPER/random")
 
     args = parser.parse_args()
     # set device
@@ -300,11 +350,14 @@ if __name__ == '__main__':
 
     elif args.sample_method == 'random':
         memory = ReplayMemory(MEMORY_SIZE)
+    
+    elif args.sample_method == 'REPER':
+        memory = REPERMemory(MEMORY_SIZE)
 
 
     # train model
-    train(env, 400, memory, render=False, sample=args.sample_method)
+    train(env, 800, memory, render=False, sample=args.sample_method)
     torch.save(policy_net, "dqn_pong_model" + args.sample_method)
     policy_net = torch.load("dqn_pong_model" + args.sample_method)
-    test(env, 1, policy_net, render=False)
+    test(env, 1, policy_net, render=False, sample_method=args.sample_method)
 

@@ -35,3 +35,96 @@ Traceback (most recent call last):
 ModuleNotFoundError: No module named 'numpy'
 Total steps: 1063 	 Episode: 0/1062 	 Total reward: -19.0
 torch.Size([32, 4, 84, 84])
+Total steps: 877 	 Episode: 0/876 	 Total reward: -21.0
+Total steps: 20305 	 Episode: 20/835 	 Total reward: -21.0
+Total steps: 39614 	 Episode: 40/954 	 Total reward: -20.0
+Total steps: 57294 	 Episode: 60/951 	 Total reward: -20.0
+Total steps: 76143 	 Episode: 80/1241 	 Total reward: -19.0
+Total steps: 97042 	 Episode: 100/954 	 Total reward: -20.0
+Total steps: 118594 	 Episode: 120/965 	 Total reward: -21.0
+Total steps: 140475 	 Episode: 140/1271 	 Total reward: -21.0
+Total steps: 160572 	 Episode: 160/1015 	 Total reward: -21.0
+Total steps: 182515 	 Episode: 180/993 	 Total reward: -19.0
+Total steps: 203854 	 Episode: 200/877 	 Total reward: -21.0
+Total steps: 227690 	 Episode: 220/1275 	 Total reward: -20.0
+Total steps: 250552 	 Episode: 240/1100 	 Total reward: -20.0
+Total steps: 275778 	 Episode: 260/1551 	 Total reward: -19.0
+Total steps: 300739 	 Episode: 280/1369 	 Total reward: -19.0
+Total steps: 327323 	 Episode: 300/959 	 Total reward: -20.0
+Total steps: 354588 	 Episode: 320/1731 	 Total reward: -18.0
+Total steps: 382832 	 Episode: 340/1375 	 Total reward: -20.0
+Total steps: 412536 	 Episode: 360/2102 	 Total reward: -17.0
+Total steps: 443883 	 Episode: 380/1758 	 Total reward: -18.0
+Finished Episode 0 with reward -8.0
+Total steps: 759 	 Episode: 0/758 	 Total reward: -21.0
+Total steps: 19431 	 Episode: 20/815 	 Total reward: -21.0
+Total steps: 38179 	 Episode: 40/908 	 Total reward: -21.0
+Total steps: 57798 	 Episode: 60/1078 	 Total reward: -20.0
+Total steps: 78069 	 Episode: 80/1185 	 Total reward: -20.0
+Total steps: 97749 	 Episode: 100/1142 	 Total reward: -21.0
+Total steps: 119667 	 Episode: 120/1218 	 Total reward: -18.0
+Total steps: 142385 	 Episode: 140/1155 	 Total reward: -20.0
+Total steps: 165332 	 Episode: 160/1109 	 Total reward: -19.0
+Total steps: 188986 	 Episode: 180/1214 	 Total reward: -20.0
+Total steps: 211410 	 Episode: 200/969 	 Total reward: -21.0
+Total steps: 235773 	 Episode: 220/1122 	 Total reward: -20.0
+Total steps: 260287 	 Episode: 240/1165 	 Total reward: -20.0
+Total steps: 287320 	 Episode: 260/1595 	 Total reward: -19.0
+Total steps: 311250 	 Episode: 280/1231 	 Total reward: -19.0
+Total steps: 336606 	 Episode: 300/1203 	 Total reward: -19.0
+Total steps: 361586 	 Episode: 320/1089 	 Total reward: -21.0
+Total steps: 388788 	 Episode: 340/1431 	 Total reward: -19.0
+Total steps: 415265 	 Episode: 360/1248 	 Total reward: -17.0
+Total steps: 444338 	 Episode: 380/1052 	 Total reward: -19.0
+Traceback (most recent call last):
+  File "main.py", line 306, in <module>
+    train(env, 400, memory, render=False, sample=args.sample_method)
+  File "main.py", line 228, in test
+    return
+  File "/root/anaconda3/envs/dqn/lib/python3.6/site-packages/gym/wrappers/monitor.py", line 27, in __init__
+    write_upon_reset, uid, mode)
+  File "/root/anaconda3/envs/dqn/lib/python3.6/site-packages/gym/wrappers/monitor.py", line 87, in _start
+    You should use a unique directory for each training run, or use 'force=True' to automatically clear previous monitor files.'''.format(directory, ', '.join(training_manifests[:5])))
+gym.error.Error: Trying to write to monitor directory ./videos/dqn_pong_video with existing monitor files: ./videos/dqn_pong_video/openaigym.manifest.0.20542.manifest.json.
+
+ You should use a unique directory for each training run, or use 'force=True' to automatically clear previous monitor files.
+Traceback (most recent call last):
+  File "main.py", line 9, in <module>
+    import gym
+ModuleNotFoundError: No module named 'gym'
+Finished Episode 0 with reward -17.0
+Traceback (most recent call last):
+  File "main.py", line 309, in <module>
+    train(env, 800, memory, render=False, sample=args.sample_method)
+  File "main.py", line 185, in train
+    action = select_action(state)
+  File "main.py", line 39, in select_action
+    return policy_net(state.to('cuda')).max(1)[1].view(1,1)
+  File "/root/anaconda3/envs/dqn/lib/python3.6/site-packages/torch/cuda/__init__.py", line 196, in _lazy_init
+    _check_driver()
+  File "/root/anaconda3/envs/dqn/lib/python3.6/site-packages/torch/cuda/__init__.py", line 101, in _check_driver
+    http://www.nvidia.com/Download/index.aspx""")
+AssertionError: 
+Found no NVIDIA driver on your system. Please check that you
+have an NVIDIA GPU and installed a driver from
+http://www.nvidia.com/Download/index.aspx
+Total steps: 817 	 Episode: 0/816 	 Total reward: -21.0
+Traceback (most recent call last):
+  File "main.py", line 309, in <module>
+    train(env, 800, memory, render=False, sample=args.sample_method)
+  File "main.py", line 185, in train
+    action = select_action(state)
+  File "main.py", line 39, in select_action
+    return policy_net(state.to('cuda')).max(1)[1].view(1,1)
+  File "/root/anaconda3/envs/dqn/lib/python3.6/site-packages/torch/cuda/__init__.py", line 196, in _lazy_init
+    _check_driver()
+  File "/root/anaconda3/envs/dqn/lib/python3.6/site-packages/torch/cuda/__init__.py", line 101, in _check_driver
+    http://www.nvidia.com/Download/index.aspx""")
+AssertionError: 
+Found no NVIDIA driver on your system. Please check that you
+have an NVIDIA GPU and installed a driver from
+http://www.nvidia.com/Download/index.aspx
+Traceback (most recent call last):
+  File "main.py", line 6, in <module>
+    import numpy as np 
+ModuleNotFoundError: No module named 'numpy'

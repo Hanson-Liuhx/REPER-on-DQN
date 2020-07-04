@@ -1,0 +1,3 @@
+framework/__pycache__
+framework/video*
+framework/*.out

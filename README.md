@@ -2,7 +2,9 @@
 
 SI151 Optimization and Machine Learning project: 
 
-**Recent Emphasized Prioritized Experience Replay on Deep Q-Network**
+**Recent Emphasized Prioritized Experience Replay based on Deep Q-Network**
+
+Deep Q-Network proposed in 2013 is the first model which combines neural network and Q-learning in reinforcement learning, and it also maintains an experience replay buffer to utilize samples before with equal probability. We present a new model based on Prioritized Experience Replay proposed in 2016, which gave priority to each sample and drawn them using different probabilities. In our model called Recent Emphasized Prioritized Experience Replay(REPER), We take into account the time sequence of sample entry and dynamically assign higher priorities to recent samples, which takes the effect of emphasizing recent samples. We also apply our model to two kinds of Atari game (Pong, Cart Pole) and compare the results with several former work.
 
 -----------------------------------------------------------------------------------------------------------------
 
